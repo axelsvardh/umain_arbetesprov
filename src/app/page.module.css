@@ -166,3 +166,7 @@ a.secondary {
     filter: invert();
   }
 }
+
+.card {
+  margin: 1rem 0;
+}
