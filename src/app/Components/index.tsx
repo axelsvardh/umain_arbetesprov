@@ -26,6 +26,7 @@ export default function Home() {
             const restaurantsArray = Array.isArray(data)
                 ? data
                 : data.restaurants || [];
+
             setRestaurants(restaurantsArray);
             setFilteredRestaurants(restaurantsArray); // Initialize filtered list
         } catch (err) {
@@ -43,27 +44,24 @@ export default function Home() {
 
             const filtered = restaurants.filter((restaurant) => {
                 const filterIdsInRestaurant = restaurant.filter_ids || [];
-                const priceIdsInRestaurant = Array.isArray(restaurant.price_ids)
-                    ? restaurant.price_ids
-                    : []; // Ensure price_ids is always an array
+                const priceRangeIdInRestaurant = restaurant.price_range_id || null; // Use price_range_id instead of price_ids
 
-                // Log restaurant price and filter data for debugging
+                // Log restaurant filter and price data for debugging
                 console.log("Restaurant Filter IDs:", filterIdsInRestaurant);
-                console.log("Restaurant Price IDs:", priceIdsInRestaurant);
+                console.log("Restaurant Price Range ID:", priceRangeIdInRestaurant);
 
                 // Check if the filter IDs match
-                const filterMatch = selectedFilterIds?.some((filterId) =>
-                    filterIdsInRestaurant.includes(filterId)
-                );
+                const filterMatch = selectedFilterIds.length > 0
+                    ? selectedFilterIds.some((filterId) => filterIdsInRestaurant.includes(filterId))
+                    : true;  // If no filters selected, consider this true (no filter is applied)
 
-                // If no price filters are selected, allow all restaurants to pass the price check
-                const priceMatch =
-                    selectedPriceIds.length === 0 ||
-                    selectedPriceIds?.some((priceId) =>
-                        priceIdsInRestaurant.includes(priceId)
-                    );
+                // Check if the price IDs match
+                const priceMatch = selectedPriceIds.length > 0
+                    ? selectedPriceIds.includes(priceRangeIdInRestaurant)
+                    : true;  // If no price is selected, consider this true (no price range is applied)
 
-                console.log("Checking price match:", selectedPriceIds, priceIdsInRestaurant);
+                console.log("Checking price match:", selectedPriceIds, priceRangeIdInRestaurant);
+                console.log("Checking filter match:", selectedFilterIds, filterIdsInRestaurant);
                 console.log("Filter Match:", filterMatch);
                 console.log("Price Match:", priceMatch);
 
@@ -73,7 +71,7 @@ export default function Home() {
             console.log("Filtered Restaurants:", filtered);
 
             if (filtered.length === 0) {
-                console.log("No restaurants match the selected filters.");
+                console.log("No restaurants match the selected filters and price.");
             }
 
             setFilteredRestaurants(filtered);
@@ -81,6 +79,8 @@ export default function Home() {
             console.error("Error in filter change:", error);
         }
     };
+
+
 
 
 
@@ -125,8 +125,8 @@ export default function Home() {
                                     : "N/A"}
                             </p>
                             <p>
-                                Price IDs: {Array.isArray(restaurant.price_ids) && restaurant.price_ids.length > 0
-                                    ? restaurant.price_ids.join(", ")
+                                Price IDs: {Array.isArray(restaurant.price_range_id) && restaurant.price_range_id.length > 0
+                                    ? restaurant.price_range_id.join(", ")
                                     : "N/A"}
                             </p>
                             <OpenStatus restaurantId={restaurant.id} />

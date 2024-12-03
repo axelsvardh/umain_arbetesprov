@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-// import PriceRange from "./PriceRange"; // Assuming you have a PriceRange component
+import PriceRange from "./PriceRange"; // Assuming you have a PriceRange component
 
 const FilterComponent = ({ onFilterChange }) => {
     const [filters, setFilters] = useState([]);
