@@ -1,165 +1,140 @@
-"use client"; // This directive makes the file a client component
+"use client";
 
-import { useEffect, useState, useRef } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import styles from "../page.module.css";
 import FilterComponent from "./filters";
+import PriceRange from "./PriceRange";
 
 export default function Home() {
-    const [restaurants, setRestaurants] = useState([]); // Initial state for restaurants
+    const [restaurants, setRestaurants] = useState([]);
+    const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+    const [selectedFilterIds, setSelectedFilterIds] = useState([]); // New state for selected filter IDs
+    const [selectedPriceIds, setSelectedPriceIds] = useState([]);   // New state for selected price IDs
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const priceRangeFetched = useRef(false); // Ref to track if price ranges have already been fetched
 
-    const baseURL = "https://work-test-web-2024-eze6j4scpq-lz.a.run.app";
-    const endpoint = "/api/restaurants"; // API endpoint for fetching restaurants
-
-    // Fetch restaurant data from API
-    useEffect(() => {
-        const fetchRestaurants = async () => {
-            const fullURL = `${baseURL}${endpoint}`;
-
-            try {
-                const response = await fetch(fullURL, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP Error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log("Fetched Data:", data); // Log the fetched data to inspect its structure
-
-                // Check if data is in expected format
-                if (Array.isArray(data)) {
-                    setRestaurants(data); // If it's an array, set it in the state
-                } else if (data && data.restaurants && Array.isArray(data.restaurants)) {
-                    setRestaurants(data.restaurants); // If the array is nested under 'restaurants'
-                } else {
-                    setError("Unexpected response format"); // Handle unexpected format
-                }
-            } catch (error) {
-                setError(error.message); // Set the error message in case of failure
-            } finally {
-                setLoading(false); // Set loading to false after fetching
-            }
-        };
-
-        fetchRestaurants(); // Call the fetch function
-    }, []); // This effect only runs once when the component mounts
-
-    // Fetch price range for each restaurant after the restaurants data is available
-    useEffect(() => {
-        if (restaurants.length === 0 || priceRangeFetched.current) return; // Do nothing if restaurants are empty or price ranges are already fetched
-
-        const fetchPriceRange = async (priceRangeId) => {
-            const priceRangeURL = `https://work-test-web-2024-eze6j4scpq-lz.a.run.app/api/price-range/${priceRangeId}`;
-            try {
-                const response = await fetch(priceRangeURL);
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch price range for ID: ${priceRangeId}`);
-                }
-                const data = await response.json();
-                console.log("Fetched Price Range Data:", data); // Log the full response for debugging
-
-                // Now access 'range' instead of 'price_range'
-                if (data && data.range) {
-                    console.log("Price Range:", data.range); // Log the correct price range
-                    return data.range; // Return the price range (range field)
-                } else {
-                    console.error("Price Range not found in response");
-                    return null; // Return null if range is not found
-                }
-            } catch (error) {
-                console.error("Error fetching price range:", error);
-                return null; // Return null if there's an error
-            }
-        };
-
-        const fetchAllPriceRanges = async () => {
-            // Update the state with the fetched price ranges
-            const updatedRestaurants = await Promise.all(
-                restaurants.map(async (restaurant) => {
-                    // Log the price_range_id for each restaurant
-                    console.log("Price Range ID for", restaurant.name, ":", restaurant.price_range_id);
-
-                    // Fetch price range for each restaurant using its price_range_id
-                    const priceRange = await fetchPriceRange(restaurant.price_range_id);
-
-                    // Log the fetched price range
-                    console.log("Fetched Price Range for", restaurant.name, ":", priceRange);
-
-                    return {
-                        ...restaurant,
-                        priceRange, // Add the fetched price range to the restaurant object
-                    };
-                })
+    // Fetch restaurants data
+    const fetchRestaurants = async () => {
+        try {
+            const response = await fetch(
+                "https://work-test-web-2024-eze6j4scpq-lz.a.run.app/api/restaurants"
             );
+            if (!response.ok) {
+                throw new Error("Failed to fetch restaurants");
+            }
+            const data = await response.json();
+            const restaurantsArray = Array.isArray(data)
+                ? data
+                : data.restaurants || [];
+            setRestaurants(restaurantsArray);
+            setFilteredRestaurants(restaurantsArray); // Initialize filtered list
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            // Update restaurants with price ranges
-            setRestaurants((prevRestaurants) => {
-                return prevRestaurants.map((restaurant, index) => ({
-                    ...restaurant,
-                    priceRange: updatedRestaurants[index]?.priceRange, // Merge the priceRange with the original restaurant
-                }));
+    // Handle filter and price change
+    const handleFilterChange = async (selectedFilterIds, selectedPriceIds = []) => {
+        try {
+            console.log("Selected Filter IDs:", selectedFilterIds);
+            console.log("Selected Price IDs:", selectedPriceIds);
+
+            const filtered = restaurants.filter((restaurant) => {
+                const filterIdsInRestaurant = restaurant.filter_ids || [];
+                const priceIdsInRestaurant = Array.isArray(restaurant.price_ids)
+                    ? restaurant.price_ids
+                    : []; // Ensure price_ids is always an array
+
+                // Log restaurant price and filter data for debugging
+                console.log("Restaurant Filter IDs:", filterIdsInRestaurant);
+                console.log("Restaurant Price IDs:", priceIdsInRestaurant);
+
+                // Check if the filter IDs match
+                const filterMatch = selectedFilterIds?.some((filterId) =>
+                    filterIdsInRestaurant.includes(filterId)
+                );
+
+                // If no price filters are selected, allow all restaurants to pass the price check
+                const priceMatch =
+                    selectedPriceIds.length === 0 ||
+                    selectedPriceIds?.some((priceId) =>
+                        priceIdsInRestaurant.includes(priceId)
+                    );
+
+                console.log("Checking price match:", selectedPriceIds, priceIdsInRestaurant);
+                console.log("Filter Match:", filterMatch);
+                console.log("Price Match:", priceMatch);
+
+                return filterMatch && priceMatch;
             });
 
-            // Set ref to true so that price ranges are not fetched again
-            priceRangeFetched.current = true;
-        };
+            console.log("Filtered Restaurants:", filtered);
 
-        fetchAllPriceRanges(); // Fetch price ranges after restaurants data is available
-    }, [restaurants]); // Only run when restaurants data is fetched
+            if (filtered.length === 0) {
+                console.log("No restaurants match the selected filters.");
+            }
 
-    // If loading, show a loading message
+            setFilteredRestaurants(filtered);
+        } catch (error) {
+            console.error("Error in filter change:", error);
+        }
+    };
+
+
+
+    const handleFilterChangeFromComponent = (selectedFilterIds) => {
+        console.log("Selected Filter IDs in Component:", selectedFilterIds);
+        setSelectedFilterIds(selectedFilterIds); // Update the selected filter IDs state
+        handleFilterChange(selectedFilterIds, selectedPriceIds);  // Pass both filter and price IDs
+    };
+
+    const handlePriceChange = (selectedPriceIds) => {
+        console.log("Selected Price IDs:", selectedPriceIds);
+        handleFilterChange(selectedFilterIds, selectedPriceIds); // Pass both filter and price IDs
+    };
+
+    useEffect(() => {
+        fetchRestaurants();
+    }, []);
+
     if (loading) {
-        return <div>Loading...</div>;
+        return <div>Loading restaurants...</div>;
     }
 
-    // If there was an error, show the error message
     if (error) {
         return <div>Error: {error}</div>;
     }
 
-    // Render the restaurants with their price range and open status
     return (
         <div className={styles.page}>
             <main className={styles.main}>
                 <h1>Restaurants</h1>
 
-                <FilterComponent />
+                <FilterComponent onFilterChange={handleFilterChangeFromComponent} />
+                <PriceRange onPriceChange={handlePriceChange} />
 
-                {/* Render the list of restaurants */}
-                {restaurants.length > 0 ? (
-                    <div>
-                        {restaurants.map((restaurant) => (
-                            <div key={restaurant.id} className={styles.card}>
-                                <h2>{restaurant.name}</h2>
-
-                                {/* Render image if restaurant has an imageUrl */}
-                                {restaurant.imageUrl && (
-                                    <Image
-                                        src={restaurant.imageUrl} // Use correct property for image URL
-                                        alt={restaurant.name}
-                                        width={500}
-                                        height={500}
-                                    />
-                                )}
-
-                                {/* Render the open status (true/false) */}
-                                <OpenStatus restaurantId={restaurant.id} />
-
-                                {/* Render the price range */}
-                                <p>Price Range: {restaurant.priceRange || "Not available"}</p>
-                            </div>
-                        ))}
-                    </div>
+                {filteredRestaurants.length > 0 ? (
+                    filteredRestaurants.map((restaurant) => (
+                        <div key={restaurant.id}>
+                            <h3>{restaurant.name}</h3>
+                            <p>
+                                Filter IDs: {Array.isArray(restaurant.filter_ids)
+                                    ? restaurant.filter_ids.join(", ")
+                                    : "N/A"}
+                            </p>
+                            <p>
+                                Price IDs: {Array.isArray(restaurant.price_ids) && restaurant.price_ids.length > 0
+                                    ? restaurant.price_ids.join(", ")
+                                    : "N/A"}
+                            </p>
+                            <OpenStatus restaurantId={restaurant.id} />
+                            <p>Time: {restaurant.delivery_time_minutes}</p>
+                        </div>
+                    ))
                 ) : (
-                    <p>No restaurants found.</p>
+                    <p>No restaurants match the selected filter.</p>
                 )}
             </main>
         </div>
