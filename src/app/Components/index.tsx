@@ -37,42 +37,35 @@ export default function Home() {
     };
 
     // Handle filter and price change
-    const handleFilterChange = async (selectedFilterIds, selectedPriceIds = []) => {
+    const handleFilterChange = async (selectedFilterIds = [], selectedPriceIds = []) => {
         try {
             console.log("Selected Filter IDs:", selectedFilterIds);
             console.log("Selected Price IDs:", selectedPriceIds);
 
             const filtered = restaurants.filter((restaurant) => {
                 const filterIdsInRestaurant = restaurant.filter_ids || [];
-                const priceRangeIdInRestaurant = restaurant.price_range_id || null; // Use price_range_id instead of price_ids
+                const priceRangeIdInRestaurant = restaurant.price_range_id || null;
 
-                // Log restaurant filter and price data for debugging
-                console.log("Restaurant Filter IDs:", filterIdsInRestaurant);
-                console.log("Restaurant Price Range ID:", priceRangeIdInRestaurant);
+                // Filter Match: True if either no category filters are applied or a match is found
+                const filterMatch =
+                    selectedFilterIds.length === 0 ||
+                    selectedFilterIds.some((filterId) => filterIdsInRestaurant.includes(filterId));
 
-                // Check if the filter IDs match
-                const filterMatch = selectedFilterIds.length > 0
-                    ? selectedFilterIds.some((filterId) => filterIdsInRestaurant.includes(filterId))
-                    : true;  // If no filters selected, consider this true (no filter is applied)
-
-                // Check if the price IDs match
-                const priceMatch = selectedPriceIds.length > 0
-                    ? selectedPriceIds.includes(priceRangeIdInRestaurant)
-                    : true;  // If no price is selected, consider this true (no price range is applied)
+                // Price Match: True if there's a price filter match (always required if prices are selected)
+                const priceMatch =
+                    selectedPriceIds.length === 0 || // Allow all if no prices selected
+                    selectedPriceIds.includes(priceRangeIdInRestaurant);
 
                 console.log("Checking price match:", selectedPriceIds, priceRangeIdInRestaurant);
                 console.log("Checking filter match:", selectedFilterIds, filterIdsInRestaurant);
                 console.log("Filter Match:", filterMatch);
                 console.log("Price Match:", priceMatch);
 
+                // Final condition: Both price and filter must match their respective criteria
                 return filterMatch && priceMatch;
             });
 
             console.log("Filtered Restaurants:", filtered);
-
-            if (filtered.length === 0) {
-                console.log("No restaurants match the selected filters and price.");
-            }
 
             setFilteredRestaurants(filtered);
         } catch (error) {
@@ -80,19 +73,16 @@ export default function Home() {
         }
     };
 
-
-
-
-
-    const handleFilterChangeFromComponent = (selectedFilterIds) => {
-        console.log("Selected Filter IDs in Component:", selectedFilterIds);
-        setSelectedFilterIds(selectedFilterIds); // Update the selected filter IDs state
-        handleFilterChange(selectedFilterIds, selectedPriceIds);  // Pass both filter and price IDs
+    const handleFilterChangeFromComponent = (newSelectedFilterIds) => {
+        console.log("Updated Selected Filter IDs:", newSelectedFilterIds);
+        setSelectedFilterIds(newSelectedFilterIds); // Update the selected filter IDs state
+        handleFilterChange(newSelectedFilterIds, selectedPriceIds); // Pass updated filters and current prices
     };
 
-    const handlePriceChange = (selectedPriceIds) => {
-        console.log("Selected Price IDs:", selectedPriceIds);
-        handleFilterChange(selectedFilterIds, selectedPriceIds); // Pass both filter and price IDs
+    const handlePriceChange = (newSelectedPriceIds) => {
+        console.log("Updated Selected Price IDs:", newSelectedPriceIds);
+        setSelectedPriceIds(newSelectedPriceIds); // Update the selected price IDs state
+        handleFilterChange(selectedFilterIds, newSelectedPriceIds); // Pass current filters and updated prices
     };
 
     useEffect(() => {
