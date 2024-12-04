@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 import styles from "../page.module.css";
 import FilterComponent from "./filters";
 import PriceRange from "./PriceRange";
+import DeliveryTime from "./DeliveryTime";
 
 export default function Home() {
     const [restaurants, setRestaurants] = useState([]);
     const [filteredRestaurants, setFilteredRestaurants] = useState([]);
     const [selectedFilterIds, setSelectedFilterIds] = useState([]); // New state for selected filter IDs
     const [selectedPriceIds, setSelectedPriceIds] = useState([]);   // New state for selected price IDs
+    const [selectedDeliveryTime, setSelectedDeliveryTime] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [deliveryTimeCategories, setDeliveryTimeCategories] = useState([]);
+
 
     // Fetch restaurants data
     const fetchRestaurants = async () => {
@@ -36,54 +40,73 @@ export default function Home() {
         }
     };
 
-    // Handle filter and price change
-    const handleFilterChange = async (selectedFilterIds = [], selectedPriceIds = []) => {
+    // Handle filter, price and delivery time change
+    const handleFilterChange = async (selectedFilterIds = [], selectedPriceIds = [], selectedDeliveryTimes = []) => {
         try {
             console.log("Selected Filter IDs:", selectedFilterIds);
             console.log("Selected Price IDs:", selectedPriceIds);
+            console.log("Selected Delivery Times:", selectedDeliveryTimes);
 
             const filtered = restaurants.filter((restaurant) => {
                 const filterIdsInRestaurant = restaurant.filter_ids || [];
                 const priceRangeIdInRestaurant = restaurant.price_range_id || null;
+                const deliveryTime = restaurant.delivery_time_minutes || null;
 
-                // Filter Match: True if either no category filters are applied or a match is found
+                // Filter Match: True if no category filters applied or there's a match
                 const filterMatch =
                     selectedFilterIds.length === 0 ||
                     selectedFilterIds.some((filterId) => filterIdsInRestaurant.includes(filterId));
 
-                // Price Match: True if there's a price filter match (always required if prices are selected)
+                // Price Match: True if no price filters applied or there's a match
                 const priceMatch =
-                    selectedPriceIds.length === 0 || // Allow all if no prices selected
+                    selectedPriceIds.length === 0 ||
                     selectedPriceIds.includes(priceRangeIdInRestaurant);
 
-                console.log("Checking price match:", selectedPriceIds, priceRangeIdInRestaurant);
-                console.log("Checking filter match:", selectedFilterIds, filterIdsInRestaurant);
-                console.log("Filter Match:", filterMatch);
-                console.log("Price Match:", priceMatch);
+                // Delivery Time Match: True if no delivery time selected or restaurant matches one of the selected categories
+                const deliveryMatch =
+                    selectedDeliveryTimes.length === 0 ||
+                    selectedDeliveryTimes.some((category) => {
+                        const categoryData = deliveryTimeCategories.find((cat) => cat.label === category);
+                        if (categoryData) {
+                            return deliveryTime >= categoryData.range[0] && deliveryTime < categoryData.range[1];
+                        }
+                        return false;
+                    });
 
-                // Final condition: Both price and filter must match their respective criteria
-                return filterMatch && priceMatch;
-            });
+            console.log("Filter Match:", filterMatch);
+            console.log("Price Match:", priceMatch);
+            console.log("Delivery Match:", deliveryMatch);
 
-            console.log("Filtered Restaurants:", filtered);
+            // Final condition: Must match all criteria
+            return filterMatch && priceMatch && deliveryMatch;
+        });
 
-            setFilteredRestaurants(filtered);
-        } catch (error) {
-            console.error("Error in filter change:", error);
-        }
-    };
+        console.log("Filtered Restaurants:", filtered);
 
-    const handleFilterChangeFromComponent = (newSelectedFilterIds) => {
-        console.log("Updated Selected Filter IDs:", newSelectedFilterIds);
-        setSelectedFilterIds(newSelectedFilterIds); // Update the selected filter IDs state
-        handleFilterChange(newSelectedFilterIds, selectedPriceIds); // Pass updated filters and current prices
-    };
+        setFilteredRestaurants(filtered);
+    } catch (error) {
+        console.error("Error in filter change:", error);
+    }
+};
 
-    const handlePriceChange = (newSelectedPriceIds) => {
-        console.log("Updated Selected Price IDs:", newSelectedPriceIds);
-        setSelectedPriceIds(newSelectedPriceIds); // Update the selected price IDs state
-        handleFilterChange(selectedFilterIds, newSelectedPriceIds); // Pass current filters and updated prices
-    };
+const handleFilterChangeFromComponent = (newSelectedFilterIds) => {
+    console.log("Updated Selected Filter IDs:", newSelectedFilterIds);
+    setSelectedFilterIds(newSelectedFilterIds); // Update the selected filter IDs state
+    handleFilterChange(newSelectedFilterIds, selectedPriceIds, selectedDeliveryTime); // Pass updated filters and current price IDs
+};
+
+const handlePriceChange = (newSelectedPriceIds) => {
+    console.log("Updated Selected Price IDs:", newSelectedPriceIds);
+    setSelectedPriceIds(newSelectedPriceIds); // Update the selected price IDs state
+    handleFilterChange(selectedFilterIds, newSelectedPriceIds, selectedDeliveryTime); // Pass current filters and updated prices
+};
+
+const handleDeliveryTimeChange = (newSelectedDeliveryTimes) => {
+    console.log("Selected Delivery Time:", newSelectedDeliveryTimes);
+    setSelectedDeliveryTime(newSelectedDeliveryTimes); // Update state
+    handleFilterChange(selectedFilterIds, selectedPriceIds, newSelectedDeliveryTimes); // Include delivery time in filtering
+};
+
 
     useEffect(() => {
         fetchRestaurants();
@@ -103,6 +126,7 @@ export default function Home() {
                 <h1>Restaurants</h1>
 
                 <FilterComponent onFilterChange={handleFilterChangeFromComponent} />
+                <DeliveryTime restaurants={restaurants} onDeliveryTimeChange={handleDeliveryTimeChange} onDeliveryTimeCategories={setDeliveryTimeCategories} />
                 <PriceRange onPriceChange={handlePriceChange} />
 
                 {filteredRestaurants.length > 0 ? (
@@ -120,7 +144,7 @@ export default function Home() {
                                     : "N/A"}
                             </p>
                             <OpenStatus restaurantId={restaurant.id} />
-                            <p>Time: {restaurant.delivery_time_minutes}</p>
+                            <p>Delivery Time: {restaurant.delivery_time_minutes}</p>
                         </div>
                     ))
                 ) : (
@@ -130,6 +154,7 @@ export default function Home() {
         </div>
     );
 }
+
 
 // Component to display the open status (true/false)
 function OpenStatus({ restaurantId }) {
