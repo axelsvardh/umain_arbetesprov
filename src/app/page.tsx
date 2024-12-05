@@ -5,11 +5,12 @@ import React, { Suspense } from 'react';
 // import FocusArea from './focus_areas/page';
 // import Champions from './champions/page';
 import Overview from './Components/';
+import styles from "./page.module.css";
 // import Filters from './Components/filter';
 
 function Page() {
   return (
-    <main>
+    <main className={styles.mainContainer}>
       <Suspense fallback={<div>Loading...</div>}>
         <Overview />
         {/* <Filters /> */}

@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import styles from "../page.module.css";
+import FrontPage from "./FrontPage";
 import FilterComponent from "./filters";
 import PriceRange from "./PriceRange";
 import DeliveryTime from "./DeliveryTime";
 
 export default function Home() {
+    const [isMobile, setIsMobile] = useState(false);
     const [restaurants, setRestaurants] = useState([]);
     const [filteredRestaurants, setFilteredRestaurants] = useState([]);
     const [selectedFilterIds, setSelectedFilterIds] = useState([]); // New state for selected filter IDs
@@ -16,6 +19,11 @@ export default function Home() {
     const [error, setError] = useState(null);
     const [deliveryTimeCategories, setDeliveryTimeCategories] = useState([]);
 
+    useEffect(() => {
+        const userAgent = navigator.userAgent || "";
+        const mobileRegex = /iPhone|iPad|iPod|Android/i;
+        setIsMobile(mobileRegex.test(userAgent));
+    }, []);
 
     // Fetch restaurants data
     const fetchRestaurants = async () => {
@@ -64,6 +72,7 @@ export default function Home() {
 
                 // Delivery Time Match: True if no delivery time selected or restaurant matches one of the selected categories
                 const deliveryMatch =
+                    !selectedDeliveryTimes ||
                     selectedDeliveryTimes.length === 0 ||
                     selectedDeliveryTimes.some((category) => {
                         const categoryData = deliveryTimeCategories.find((cat) => cat.label === category);
@@ -112,6 +121,11 @@ const handleDeliveryTimeChange = (newSelectedDeliveryTimes) => {
         fetchRestaurants();
     }, []);
 
+    if (isMobile) {
+        // Render mobile front page if on a mobile device
+        return <FrontPage />;
+    }
+
     if (loading) {
         return <div>Loading restaurants...</div>;
     }
@@ -121,36 +135,55 @@ const handleDeliveryTimeChange = (newSelectedDeliveryTimes) => {
     }
 
     return (
-        <div className={styles.page}>
-            <main className={styles.main}>
-                <h1>Restaurants</h1>
+        // <div style={{backgroundColor:"green"}}>
+        <div>
+            <img src="./images/logo.png" alt="Munchies Logo" className={styles.logo}/>
+            <div className={styles.contentContainer}>
+                <div className={styles.filterContainer}>
+                    <h1 className={styles.filterWrapper}>Filter</h1>
+                    <FilterComponent onFilterChange={handleFilterChangeFromComponent} />
+                    <DeliveryTime restaurants={restaurants} onDeliveryTimeChange={handleDeliveryTimeChange} onDeliveryTimeCategories={setDeliveryTimeCategories} />
+                    <PriceRange onPriceChange={handlePriceChange} />
+                </div>
+                <div>
+                <div className={styles.topbarFilter}>
+                    <FilterComponent onFilterChange={handleFilterChangeFromComponent} />
+                </div>
+                <h1 className={`${styles.display} ${styles.heading}`}>Restaurant´s</h1>
+                    <div className={styles.cardContainer}>
+                        {filteredRestaurants.length > 0 ? (
+                            filteredRestaurants.map((restaurant) => (
+                                <div key={restaurant.id} className={styles.card}>
+                                    {/* <p>
+                                        Filter IDs: {Array.isArray(restaurant.filter_ids)
+                                        ? restaurant.filter_ids.join(", ")
+                                        : "N/A"}
+                                        </p> */}
+                                    {/* <p>
+                                        Price IDs: {Array.isArray(restaurant.price_range_id) && restaurant.price_range_id.length > 0
+                                        ? restaurant.price_range_id.join(", ")
+                                        : "N/A"}
+                                        </p> */}
+                                    <div className={styles.detailsContainer}>
+                                        <OpenStatus restaurantId={restaurant.id} />
+                                        <p className={styles.deliveryTime}>{restaurant.delivery_time_minutes} min</p>
+                                    </div>
+                                    <img src={restaurant.image_url} alt={restaurant.name} className={styles.foodImage}/>
 
-                <FilterComponent onFilterChange={handleFilterChangeFromComponent} />
-                <DeliveryTime restaurants={restaurants} onDeliveryTimeChange={handleDeliveryTimeChange} onDeliveryTimeCategories={setDeliveryTimeCategories} />
-                <PriceRange onPriceChange={handlePriceChange} />
-
-                {filteredRestaurants.length > 0 ? (
-                    filteredRestaurants.map((restaurant) => (
-                        <div key={restaurant.id}>
-                            <h3>{restaurant.name}</h3>
-                            <p>
-                                Filter IDs: {Array.isArray(restaurant.filter_ids)
-                                    ? restaurant.filter_ids.join(", ")
-                                    : "N/A"}
-                            </p>
-                            <p>
-                                Price IDs: {Array.isArray(restaurant.price_range_id) && restaurant.price_range_id.length > 0
-                                    ? restaurant.price_range_id.join(", ")
-                                    : "N/A"}
-                            </p>
-                            <OpenStatus restaurantId={restaurant.id} />
-                            <p>Delivery Time: {restaurant.delivery_time_minutes}</p>
-                        </div>
-                    ))
-                ) : (
-                    <p>No restaurants match the selected filter.</p>
-                )}
-            </main>
+                                    <div className={styles.nameButtonWrapper}>
+                                        <h1>{restaurant.name}</h1>
+                                        <div className={styles.restuarantButton}>
+                                            <img src="./images/arrow-right.png" alt="Arrow Icon"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No restaurants match the selected filter.</p>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
@@ -188,5 +221,5 @@ function OpenStatus({ restaurantId }) {
         return <p>Loading open status...</p>;
     }
 
-    return <p>{isOpen ? "Open" : "Closed"}</p>; // Render true/false directly
+    return <p className={styles.open}>{isOpen ? "Open" : "Closed"}</p>; // Render true/false directly
 }

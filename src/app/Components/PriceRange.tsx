@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import styles from "../page.module.css";
 
 const PriceRange = ({ onPriceChange }) => {
     const [prices, setPrices] = useState([]);
@@ -50,24 +51,22 @@ const PriceRange = ({ onPriceChange }) => {
     }, []);
 
     return (
-        <div>
+        <div className={styles.filterWrapper}>
             {loading && <p>Loading prices...</p>}
             {error && <p>Error: {error}</p>}
 
-            <h1>Price Range</h1>
-            <div>
+            <p className={styles.filterHeading}>Price Range</p>
+            <div className={styles.filterButtonsWrapper}>
                 {prices.length > 0 ? (
                     prices.map((price) => (
                         <button
                             key={price.id}
                             onClick={() => handlePriceSelect(price.id)}
+                            className={`${styles.filterButtons} ${styles.priceButtons}`}
                             style={{
                                 backgroundColor: selectedPriceIds.includes(price.id)
                                     ? "lightblue"
-                                    : "white", // Toggle selected state
-                                margin: "5px",
-                                padding: "10px 20px",
-                                cursor: "pointer",
+                                    : "white",
                             }}
                         >
                             {price.range}

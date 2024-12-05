@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import styles from "../page.module.css";
 
 const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategories }) => {
     const [deliveryTimes, setDeliveryTimes] = useState([]);
@@ -76,24 +77,20 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
     };
 
     return (
-        <div>
+        <div className={styles.filterWrapper}>
             {loading && <p>Loading delivery times...</p>}
             {error && <p>Error: {error}</p>}
-            <h2>Delivery Time</h2>
-            <div>
+            <p className={styles.filterHeading}>Delivery Time</p>
+            <div className={styles.filterButtonsWrapper}>
                 {deliveryTimeCategories.map((category) => (
                     <button
                         key={category.label}
                         onClick={() => handleDeliveryTimeToggle(category.label)}
+                        className={styles.filterButtons}
                         style={{
                             backgroundColor: selectedDeliveryTimes.includes(category.label)
                                 ? "lightblue" // Active color when selected
                                 : "white", // Default color
-                            margin: "5px",
-                            padding: "10px 20px",
-                            cursor: "pointer",
-                            border: "1px solid #ccc", // Border for clean look
-                            borderRadius: "5px", // Optional: rounded corners
                         }}
                     >
                         {category.label}

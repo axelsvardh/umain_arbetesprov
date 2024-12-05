@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import PriceRange from "./PriceRange"; // Assuming you have a PriceRange component
+import PriceRange from "./PriceRange";
+import styles from "../page.module.css";
 
 const FilterComponent = ({ onFilterChange }) => {
     const [filters, setFilters] = useState([]);
@@ -94,28 +95,25 @@ const FilterComponent = ({ onFilterChange }) => {
     }, [selectedFilterIds]); // Re-run when selected filters change
 
     return (
-        <div>
+        <div className={styles.filterWrapper}>
             {loading && <p>Loading filters...</p>}
             {error && <p>Error: {error}</p>}
 
-            <h1>Filter by Category</h1>
-            <div>
+            <p className={styles.filterHeading}>Food Category</p>
+            <div className={`${styles.filterButtonsWrapper} ${styles.foodCategoryWrapper}`}>
                 {filters.length > 0 ? (
                     filters.map((filter) => (
-                        <button
-                            key={filter.id}
-                            onClick={() => handleFilterSelect(filter.id)}
-                            style={{
-                                backgroundColor: selectedFilterIds.includes(filter.id)
-                                    ? "lightblue"
-                                    : "white", // Toggle selected state
-                                margin: "5px",
-                                padding: "10px 20px",
-                                cursor: "pointer",
-                            }}
-                        >
-                            {filter.name}
-                        </button>
+                      <div className={styles.filterButtons}
+                      key={filter.id}
+                      onClick={() => handleFilterSelect(filter.id)}
+                      style={{
+                        backgroundColor: selectedFilterIds.includes(filter.id)
+                            ? "lightblue"
+                            : "white",
+                    }}>
+                        <p className={styles.foodTitle}>{filter.name}</p>
+                        <img className={styles.filterImage} src={`.${filter.image_url.toLowerCase()}`} alt={filter.name}/>
+                      </div>
                     ))
                 ) : (
                     <p>No filters available</p>
