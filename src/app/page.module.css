@@ -3,10 +3,6 @@
   margin: auto;
 }
 
-.container {
-  padding: 24px;
-}
-
 .gridContainer {
   display: grid;
   grid-template-columns: 1fr 5fr;
@@ -259,6 +255,10 @@
       color: white;
       font-weight: 700;
     }
+  }
+
+  .container {
+    padding: 24px;
   }
 
   .gridContainer {
