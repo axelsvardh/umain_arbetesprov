@@ -65,7 +65,7 @@ const PriceRange = ({ onPriceChange }) => {
                             className={`${styles.filterButtons} ${styles.priceButtons}`}
                             style={{
                                 backgroundColor: selectedPriceIds.includes(price.id)
-                                    ? "lightblue"
+                                    ? "#FAFAFA"
                                     : "white",
                             }}
                         >

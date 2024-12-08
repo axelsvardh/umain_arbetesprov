@@ -77,7 +77,7 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
     };
 
     return (
-        <div className={styles.filterWrapper}>
+        <div className={`${styles.filterWrapper} ${styles.deliveryWrapper}`}>
             {loading && <p>Loading delivery times...</p>}
             {error && <p>Error: {error}</p>}
             <p className={styles.filterHeading}>Delivery Time</p>
@@ -89,8 +89,8 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
                         className={styles.filterButtons}
                         style={{
                             backgroundColor: selectedDeliveryTimes.includes(category.label)
-                                ? "lightblue" // Active color when selected
-                                : "white", // Default color
+                                ? "#FAFAFA" // Active
+                                : "white",
                         }}
                     >
                         {category.label}

@@ -3,9 +3,9 @@
   margin: auto;
 }
 
-.contentContainer {
+.gridContainer {
   display: grid;
-  grid-template-columns: 1fr 4fr;
+  grid-template-columns: 1fr 5fr;
   gap: 20px;
 }
 
@@ -22,45 +22,49 @@
   padding: 40px 0 32px 0;
 }
 
-.topbarFilter {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  overflow: hidden;
+.contentContainer {
+  display: grid;
+  align-self: start;
 
-  .filterHeading {
-    display: none;
-  }
-
-  .filterButtonsWrapper {
-    display: flex;
-    gap: 10px;
+  .topbarFilter {
+    width: 100%;
     overflow: hidden;
-    overflow-x: auto;
-    white-space: nowrap;
-    /* flex-wrap: wrap; */
 
-    .filterButtons {
-      display: flex;
-      justify-content: space-between;
-      border: 1px solid rgba(0, 0, 0, .1);
-      border-radius: 6px;
-      cursor: pointer;
-      gap: 4px;
-      width: 160px;
-
-      .foodTitle {
-        font-size: 14px;
-        padding: 16px 0 0 12px;
-      }
+    .filterHeading {
+      display: none;
     }
 
-    .filterImage {
-      width: 80px;
-      height: 80px;
+    .filterButtonsWrapper {
+      display: flex;
+      gap: 10px;
+      overflow: hidden;
+      overflow-x: auto;
+      white-space: nowrap;
+      /* flex-wrap: wrap; */
+
+      .filterButtons {
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid rgba(0, 0, 0, .1);
+        border-radius: 6px;
+        cursor: pointer;
+        gap: 4px;
+        width: 160px;
+
+        .foodTitle {
+          font-size: 14px;
+          padding: 16px 0 0 12px;
+        }
+      }
+
+      .filterImage {
+        width: 80px;
+        height: 80px;
+      }
     }
   }
 }
+
 
 .cardContainer {
   /* display: grid;
@@ -69,9 +73,16 @@
   flex-wrap: wrap;
   gap: 17px;
 
+  .openRestaurant {
+    background-color: green;
+  }
+
+  .closedRestaurant *:not(.detailsContainer, .closed) {
+    opacity: 0.5;
+  }
+
   .card {
     display: flex;
-
     padding: 16px;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, .1);
@@ -88,6 +99,7 @@
       gap: 8px;
 
       .open,
+      .closed,
       .deliveryTime {
         padding: 10px;
         border: 1px solid rgba(0, 0, 0, .1);
@@ -102,6 +114,15 @@
         height: 8px;
         border-radius: 50%;
         background-color: #00703A;
+        margin-right: 4px;
+      }
+      .closed::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: black;
         margin-right: 4px;
       }
     }
@@ -119,7 +140,7 @@
       justify-content: space-between;
       align-items: center;
 
-      .restuarantButton {
+      .restaurantButton {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -137,11 +158,15 @@
   border-radius: 6px;
   background-color: white;
   padding: 1.5rem;
+  width: 240px;
 
   .filterWrapper {
     margin-bottom: 32px;
-    width: 100%;
-    overflow: hidden;
+  }
+
+  .deliveryWrapper .filterButtons {
+    font-size: 12px;
+    font-family: "SF Pro", -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   .filterHeading {
@@ -176,13 +201,6 @@
   .foodCategoryWrapper {
     flex-direction: column;
     align-items: start;
-  }
-}
-
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
   }
 }
 
@@ -225,24 +243,57 @@
     }
   }
 
-  .contentContainer {
+  .container {
+    padding: 24px;
+  }
+
+  .gridContainer {
     grid-template-columns: auto;
-    gap: 10px;
-    padding: 0 24px;
+    gap: 24px;
+    /* padding: 0 24px; */
+  }
+
+  .logo {
+    width: 168px;
+    padding: 16px 0 24px 0;
   }
 
   .cardContainer {
     justify-content: center;
   }
 
-  .filterWrapper,
-  .topbarFilter {
-    width: 100%;
-    overflow: hidden;
+  .filterContainer {
+    width: auto;
+    border: none;
+    background-color: transparent;
+    border-radius: 0;
+    padding: 0;
   }
+
+  .filterContainer {
+    .filterWrapper {
+      margin-bottom: 0;
+    }
+
+    .filterWrapper:not(.deliveryWrapper) {
+      display: none;
+    }
+
+    .filterButtonsWrapper {
+      gap: 0;
+      flex-wrap: nowrap;
+    }
+  }
+
   .filterButtonsWrapper {
     overflow: hidden;
     overflow-x: auto;
     white-space: nowrap;
+    justify-content: space-between;
+  }
+
+  .heading {
+    font-size: 20px;
+    padding: 24px 0 20px 0;
   }
 }
