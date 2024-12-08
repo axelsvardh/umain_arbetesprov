@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Image from 'next/image';
 import styles from "../page.module.css";
 
 const FilterComponent = ({ onFilterChange }) => {
@@ -56,10 +57,12 @@ const FilterComponent = ({ onFilterChange }) => {
                             }}
                         >
                             <p className={styles.foodTitle}>{name}</p>
-                            <img
-                                className={styles.filterImage}
-                                src={`.${image_url.toLowerCase()}`}
-                                alt={name}
+                            <Image
+                              className={styles.filterImage}
+                              src={image_url}
+                              alt={name}
+                              width={80}
+                              height={80}
                             />
                         </div>
                     ))
