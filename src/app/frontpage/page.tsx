@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation"; // Ensure correct import for Next.js 13+
+import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
 
 export default function FrontPage() {
