@@ -19,10 +19,8 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [deliveryTimeCategories, setDeliveryTimeCategories] = useState([]);
   const [openStatuses, setOpenStatuses] = useState({});
-
   const router = useRouter();
 
-  // Handle mobile detection and session storage for redirection
   const handleMobileRedirect = useCallback(() => {
     const userAgent = navigator.userAgent || "";
     const mobileRegex = /iPhone|iPad|iPod|Android/i;
@@ -43,7 +41,6 @@ export default function Home() {
     handleMobileRedirect();
   }, [handleMobileRedirect]);
 
-  // Fetch restaurants and open statuses
   const fetchRestaurants = useCallback(async () => {
     try {
       const response = await fetch("https://work-test-web-2024-eze6j4scpq-lz.a.run.app/api/restaurants");
@@ -54,9 +51,8 @@ export default function Home() {
       const restaurantsArray = Array.isArray(data) ? data : data.restaurants || [];
 
       setRestaurants(restaurantsArray);
-      setFilteredRestaurants(restaurantsArray); // Initialize filtered list
+      setFilteredRestaurants(restaurantsArray);
 
-      // Fetch open statuses
       const statuses = await Promise.all(
         restaurantsArray.map(async (restaurant) => {
           const res = await fetch(`https://work-test-web-2024-eze6j4scpq-lz.a.run.app/api/open/${restaurant.id}`);
@@ -159,6 +155,7 @@ export default function Home() {
                       {openStatuses[restaurant.id] && <p className={styles.deliveryTime}>{restaurant.delivery_time_minutes} min</p>}
                     </div>
                     <img src={restaurant.image_url} alt={restaurant.name} className={styles.foodImage} />
+                    <div className={styles.closedAlert}>Opens tomorrow</div>
                     <div className={styles.nameButtonWrapper}>
                       <h1>{restaurant.name}</h1>
                       <div className={styles.restaurantButton}>

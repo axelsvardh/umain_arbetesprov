@@ -3,6 +3,10 @@
   margin: auto;
 }
 
+.container {
+  padding: 24px;
+}
+
 .gridContainer {
   display: grid;
   grid-template-columns: 1fr 5fr;
@@ -74,12 +78,26 @@
   gap: 17px;
 
   .openRestaurant {
-    background-color: green;
+    .closedAlert {
+      display: none;
+    }
   }
 
-  .closedRestaurant *:not(.detailsContainer, .closed) {
-    opacity: 0.5;
+  .closedRestaurant {
+    *:not(.detailsContainer, .closed, .closedAlert) {
+      opacity: 0.5;
+    }
+
+    .closedAlert {
+      display: block;
+      align-self: center;
+      padding: 8px 12px;
+      background-color: #FAFAFA;
+      border: 1px solid rgba(0, 0, 0, .1);
+      border-radius: 6px;
+    }
   }
+
 
   .card {
     display: flex;
@@ -241,10 +259,6 @@
       color: white;
       font-weight: 700;
     }
-  }
-
-  .container {
-    padding: 24px;
   }
 
   .gridContainer {

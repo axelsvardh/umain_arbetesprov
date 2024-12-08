@@ -6,7 +6,6 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Delivery time categories
     const deliveryTimeCategories = [
         { label: "0-10 min", range: [0, 9] },
         { label: "10-30 min", range: [10, 29] },
@@ -14,12 +13,10 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
         { label: "1 hour+", range: [60, Infinity] }
     ];
 
-    // Pass categories to parent component
     useEffect(() => {
-        onDeliveryTimeCategories(deliveryTimeCategories); // Send categories to parent
+        onDeliveryTimeCategories(deliveryTimeCategories);
     }, [onDeliveryTimeCategories]);
 
-    // Fetch delivery times for each restaurant
     const fetchDeliveryTimes = async () => {
         setLoading(true);
         setError(null);
@@ -31,9 +28,8 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
                 );
                 if (response.ok) {
                     const data = await response.json();
-                    const deliveryTime = data.delivery_time; // Adjust based on API response structure
+                    const deliveryTime = data.delivery_time;
 
-                    // Classify the delivery time into one of the categories
                     const category = deliveryTimeCategories.find((cat) =>
                         deliveryTime >= cat.range[0] && deliveryTime < cat.range[1]
                     );
@@ -42,7 +38,7 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
                         deliveryTimes.push({
                             restaurantId: restaurant.id,
                             deliveryTime: deliveryTime,
-                            category: category.label, // Use category label
+                            category: category.label,
                         });
                     }
                 } else {
@@ -63,17 +59,17 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
         }
     }, [restaurants]);
 
-    // Manage multiple selected categories
+    // Multiple select
     const [selectedDeliveryTimes, setSelectedDeliveryTimes] = useState([]);
 
-    // Handle category selection/deselection
+    // Category toggle
     const handleDeliveryTimeToggle = (category) => {
         const newSelected = selectedDeliveryTimes.includes(category)
             ? selectedDeliveryTimes.filter((item) => item !== category)
             : [...selectedDeliveryTimes, category];
 
-        setSelectedDeliveryTimes(newSelected); // Update the selected delivery times
-        onDeliveryTimeChange(newSelected); // Notify parent of the selected categories
+        setSelectedDeliveryTimes(newSelected);
+        onDeliveryTimeChange(newSelected);
     };
 
     return (
@@ -89,7 +85,7 @@ const DeliveryTime = ({ restaurants, onDeliveryTimeChange, onDeliveryTimeCategor
                         className={styles.filterButtons}
                         style={{
                             backgroundColor: selectedDeliveryTimes.includes(category.label)
-                                ? "#FAFAFA" // Active
+                                ? "#eeeeee" // Active
                                 : "white",
                         }}
                     >
